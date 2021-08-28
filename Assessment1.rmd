@@ -1,0 +1,142 @@
+---
+title: "Assessment1"
+author: "Aanchal s4651687"
+date: "28/08/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# **RMarkdown editing**
+
+**RMarkdown** is a framework that provides a literate programming format for data science. RMarkdown is a *file format for making dynamic documents with R*. An R Markdown document is written in markdown and contains chunks of embedded R code.
+
+*This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents.*
+
+For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+#### Q-5
+
+```{r}
+library(tidyverse)
+
+data<-
+read_csv('https://rmarkdown.rstudio.com/lesson-8.html')
+```
+
+#### Q-6
+
+```{r}
+
+fastfood <-
+read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-09-04/fastfood_calories.csv")
+
+```
+
+#### Q-7
+```{r}
+fastfood%>%head(10)
+```
+```{r}
+knitr::kable(head(fastfood[1:10, 1:5], "pipe"))
+```
+
+#### Q-8
+```{r}
+fastfood%>%select(restaurant,item,calories)%>%filter(calories>1000)
+```
+
+#### Q-9
+
+```{r}
+dont_eat_this <- fastfood%>%select(restaurant, item, total_fat,total_carb)    %>%filter(total_fat>40 & total_carb>80)
+
+dont_eat_this
+```
+
+#### Q-10
+```{r}
+fastfood%>%filter(restaurant == "Mcdonalds")
+```
+
+
+# **Part 2**
+
+#### Q-11
+
+```{r}
+library(skimr)
+library(knitr)
+skim(fastfood)
+
+```
+
+#### Q-12
+
+```{r}
+
+fastfood %>% count(restaurant, sort = TRUE) %>% 
+  kable()
+
+```
+
+#### Q-13
+```{r}
+fastfood %>% group_by(restaurant) %>% summarise(average_calories = mean(calories)) %>% ungroup () %>% arrange(desc(average_calories)) %>% kable()
+```
+
+
+
+#### Q-14
+```{r}
+fastfood <- fastfood %>% group_by(restaurant)  %>% mutate (average_calories = mean(calories)) %>% ungroup ()
+glimpse(fastfood) %>% select(restaurant, average_calories)
+```
+
+
+#### Q-15
+
+```{r}
+```
+
+
+#### Q-16
+
+```{r}
+max_total_fat <- fastfood %>% group_by(restaurant) %>% mutate(max_total_fat = max(total_fat)) %>% ungroup ()
+
+head(max_total_fat)
+
+```
+
+#### Q-17
+```{r}
+library(ggplot2)
+
+fastfood%>% filter(restaurant == "Mcdonalds") %>% ggplot(aes(x = sugar, y = protein, color = restaurant, size=sugar)) +
+  geom_point()
+```
+
+#### Q-18
+```{r}
+class(fastfood$restaurant)
+Class18 <- as_factor(fastfood$restaurant)  #after converting it will be shown in values
+
+```
+
+#### Q-19
+
+```{r}
+calories_type <- cut_number(fastfood$calories, n = 3, labels=c("low", "med", "high")) 
+ levels(calories_type)    #making groups using cut_number functions
+
+
+```
+```{r}
+fastfood1 <- fastfood %>% mutate(fct_relevel(calories_type)) #adding the variable to data type
+```
+
+
