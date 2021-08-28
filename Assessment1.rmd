@@ -136,7 +136,7 @@ calories_type <- cut_number(fastfood$calories, n = 3, labels=c("low", "med", "hi
 
 ```
 ```{r}
-fastfood1 <- fastfood %>% mutate(fct_relevel(calories_type)) #adding the variable to data type
+fastfood1 <- fastfood %>% mutate(fct_relevel(calories_type)) #adding the variable to data types
 ```
 
 
