@@ -18,16 +18,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
+
+
 #### Q-5
 
 ```{r}
 library(tidyverse)
+library(knitr)
 
 data<-
 read_csv('https://rmarkdown.rstudio.com/lesson-8.html')
 ```
 
-#### Q-6
+
+
+#### Q-6  Insert an R chunk and create a variable with this dataset
 
 ```{r}
 
@@ -36,20 +41,35 @@ read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/d
 
 ```
 
-#### Q-7
+
+
+#### Q-7 Display the first 10 rows of the dataset
 ```{r}
 fastfood%>%head(10)
 ```
+
+
+
+#### Q-7 Display the first 10 rows of the dataset and the first 5 variables using kabble() function
 ```{r}
 knitr::kable(head(fastfood[1:10, 1:5], "pipe"))
 ```
 
-#### Q-8
+
+
+
+
+
+
+#### Q-8 Display the observations that has more than 1000 calories
 ```{r}
 fastfood%>%select(restaurant,item,calories)%>%filter(calories>1000)
 ```
 
-#### Q-9
+
+
+#### Q-9 Save observations with more than 40 in total_fat and more than 80 in total_carb in a new variable (dataset) called `dont_eat_this`
+
 
 ```{r}
 dont_eat_this <- fastfood%>%select(restaurant, item, total_fat,total_carb)    %>%filter(total_fat>40 & total_carb>80)
@@ -57,15 +77,19 @@ dont_eat_this <- fastfood%>%select(restaurant, item, total_fat,total_carb)    %>
 dont_eat_this
 ```
 
-#### Q-10
+#### Q-10  Using the initial dataset variable, display observations from restaurant Mcdonalds
 ```{r}
 fastfood%>%filter(restaurant == "Mcdonalds")
 ```
+---------------------------------------------------------------------------------------------------
+
+
+
 
 
 # **Part 2**
 
-#### Q-11
+#### Q-11 Display the types of variables in the dataset using `skimr` package.
 
 ```{r}
 library(skimr)
@@ -74,7 +98,10 @@ skim(fastfood)
 
 ```
 
-#### Q-12
+
+
+
+#### Q-12 Show the count of observations for each restaurant.
 
 ```{r}
 
@@ -83,27 +110,57 @@ fastfood %>% count(restaurant, sort = TRUE) %>%
 
 ```
 
-#### Q-13
+
+
+
+
+#### Q-13 Using grouppings (group_by()), summarise and display the average number of calories for each restaurant.
+
 ```{r}
 fastfood %>% group_by(restaurant) %>% summarise(average_calories = mean(calories)) %>% ungroup () %>% arrange(desc(average_calories)) %>% kable()
 ```
 
 
 
-#### Q-14
+
+
+
+#### Q-14 Add a variable to the dataset, which calculates the average calories per type of restaurant and call it `average_calories`.
+
 ```{r}
 fastfood <- fastfood %>% group_by(restaurant)  %>% mutate (average_calories = mean(calories)) %>% ungroup ()
 glimpse(fastfood) %>% select(restaurant, average_calories)
 ```
 
 
-#### Q-15
+
+
+
+
+#### Q-15 Display the data vis of total fat per each type of restaurant.
+
+The bar graph represents the best visualization for discreteand continuous variable. The total fat is a continuous variable and the restaurantis a discrete variable. The bar graph is the most effective way to compare and comprehendthe data. In this graph also, one can easily understand that Burger King has the highesttotal fat, followed by Taco Bell and least by Chick-Fil-A.
+
 
 ```{r}
+
+library(ggplot2)
+fastfood %>%
+  group_by(restaurant) %>%
+  summarise(sum_total_fat = sum(total_fat)) %>%
+  ungroup() %>%
+  mutate(restaurant = fct_reorder(restaurant, sum_total_fat)) %>%
+  ggplot(aes(restaurant, sum_total_fat)) +
+  geom_col ()+
+  coord_flip()+
+
+labs(x="Restaurant Names", y="Sum of Total Fat", title="Data Visualisation", caption="Image 1: Bar Graph")
 ```
 
 
-#### Q-16
+
+
+#### Q-16 Add a variable to the dataset, which calculates the maximum total fat per type of restaurant and call it `max_total_fat` 
 
 ```{r}
 max_total_fat <- fastfood %>% group_by(restaurant) %>% mutate(max_total_fat = max(total_fat)) %>% ungroup ()
@@ -112,31 +169,125 @@ head(max_total_fat)
 
 ```
 
-#### Q-17
+
+
+#### Q-17 Use observations for Mcdonalds to plot sugar variable against protein with `geom_point()` 
+
 ```{r}
 library(ggplot2)
 
 fastfood%>% filter(restaurant == "Mcdonalds") %>% ggplot(aes(x = sugar, y = protein, color = restaurant, size=sugar)) +
-  geom_point()
+  geom_point()+
+  labs(x="Protein", y="Sugar", title="Data Visualisation", caption="Image 2: Point graph")
 ```
 
-#### Q-18
+
+
+
+#### Q-18 Identify variable(s) which should be factors and transform their type into a factor variable.
+
 ```{r}
+
+
 class(fastfood$restaurant)
-Class18 <- as_factor(fastfood$restaurant)  #after converting it will be shown in values
+class(fastfood$salad)
+class(fastfood$item)
+
+class18 <- as_factor(fastfood$restaurant)
+class19 <- as_factor(fastfood$salad)
+class20 <- as_factor(fastfood$item)
+
 
 ```
 
-#### Q-19
+
+
+
+#### Q-19 Read about `cut_number()` function using Help and add a new variable to the dataset `calories_type`. Use `calories` variable for `cut_number()` function to split it into 3 categories `n=3`, add labels `labels=c("low", "med", "high")` and make the dataset ordered.
 
 ```{r}
 calories_type <- cut_number(fastfood$calories, n = 3, labels=c("low", "med", "high")) 
- levels(calories_type)    #making groups using cut_number functions
+ levels(calories_type)    
 
 
+fastfood1 <- fastfood %>% mutate(calories_type)
 ```
+
+
+
+
+#### Q-20 Create a dataviz that shows the distribution of `calories_type` in food items for each type of restaurant.
+
 ```{r}
-fastfood1 <- fastfood %>% mutate(fct_relevel(calories_type)) #adding the variable to data types
+fastfood1 %>% count (restaurant, calories_type, sort = TRUE)
 ```
+
+```{r}
+fastfood1 %>% count (restaurant, calories_type, sort = TRUE) %>%
+  ggplot(aes(calories_type, n, color=calories_type, fill = calories_type)) +
+  geom_boxplot()+
+  facet_wrap(~restaurant)+
+  theme_light()+
+   labs(x="Type of calories", y="Total no of calories", title="Calories type for each resturant", caption="Image 3: Box plot")
+  
+
+```
+
+
+
+
+
+#### Q-21 The second variable should show the percentage of `trans_fat` in `total_fat`
+
+```{r}
+fastfood2 <-fastfood1 %>% mutate(trans_fat_percent = trans_fat/total_fat)
+```
+
+
+
+#### Q-22 Create a dataviz that shows the distribution of `trans_fat` in food items for each type of restaurant
+`
+
+```{r}
+fastfood2%>%
+  count (restaurant, trans_fat, sort = TRUE) %>%
+  ggplot(aes(trans_fat, n)) +
+  geom_jitter()+
+  facet_wrap(~restaurant)+
+  theme_bw()+
+labs(x="Trans Fat", y="Total no of trans fat", title="Trans fat for each resturant", caption="Image 4: jitter")
+```
+
+
+
+
+
+
+#### Q-23 Calculate and show the average (mean)  `total_fat` for each type of restaurant.
+```{r}
+totalfat <-fastfood2 %>%
+  group_by(restaurant) %>%
+  summarise(total_fat = mean(total_fat))
+```
+
+
+
+
+#### Q-24  create a dataviz that allow to compare different restaurants on this variable (`total_fat`).
+
+```{r}
+fastfood2 %>%
+  group_by(restaurant) %>%
+summarise(totalfat = mean(total_fat)) %>%
+ungroup() %>%
+mutate(restaurant = fct_reorder(restaurant, totalfat)) %>%
+ggplot(aes(restaurant, totalfat, fill=restaurant)) +
+geom_col()+
+coord_flip()+
+theme_grey()+
+
+labs(x="Names of restaurant", y="Average fat", title="Comaprison of restaurants based on total fat", caption="Image 5: Bar Graph")
+```
+
 
 
